@@ -1,0 +1,310 @@
+openapi: 3.0.3
+info:
+  title: Online Library API
+  description: A RESTful API definition for an online library system of a university.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Local test server
+
+paths:
+  /books:
+    get:
+      tags: [Books]
+      summary: Retrieve all books
+      description: Returns a paginated list of books.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+      responses:
+        '200':
+          description: Book list retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      tags: [Books]
+      summary: Add a new book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+            example:
+              id: "b123"
+              title: "Artificial Intelligence 101"
+              author: "Ali Veli"
+              isbn: "978-3-16-148410-0"
+              publisher: "Library Publications"
+              pageCount: 320
+              stock: 5
+      responses:
+        '201':
+          description: Book successfully added.
+
+  /books/{id}:
+    get:
+      tags: [Books]
+      summary: Retrieve a single book
+      parameters:
+        - $ref: '#/components/parameters/BookId'
+      responses:
+        '200':
+          description: Book found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Books]
+      summary: Update a book
+      parameters:
+        - $ref: '#/components/parameters/BookId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        '200':
+          description: Book updated.
+    delete:
+      tags: [Books]
+      summary: Delete a book
+      parameters:
+        - $ref: '#/components/parameters/BookId'
+      responses:
+        '204':
+          description: Book deleted.
+
+  /students:
+    get:
+      tags: [Students]
+      summary: Retrieve the student list
+      responses:
+        '200':
+          description: Students listed.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Student'
+    post:
+      tags: [Students]
+      summary: Add a new student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '201':
+          description: Student created.
+
+  /students/{id}:
+    get:
+      tags: [Students]
+      summary: Retrieve a single student
+      parameters:
+        - $ref: '#/components/parameters/StudentId'
+      responses:
+        '200':
+          description: Student found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+    put:
+      tags: [Students]
+      summary: Update student
+      parameters:
+        - $ref: '#/components/parameters/StudentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '200':
+          description: Student updated.
+    delete:
+      tags: [Students]
+      summary: Delete student
+      parameters:
+        - $ref: '#/components/parameters/StudentId'
+      responses:
+        '204':
+          description: Student deleted.
+
+  /loans:
+    get:
+      tags: [Loans]
+      summary: Retrieve loan records
+      responses:
+        '200':
+          description: Loan records listed.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+    post:
+      tags: [Loans]
+      summary: Borrow a book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Loan'
+      responses:
+        '201':
+          description: Book loan created.
+
+  /loans/{id}:
+    get:
+      tags: [Loans]
+      summary: Retrieve a specific loan record
+      parameters:
+        - $ref: '#/components/parameters/LoanId'
+      responses:
+        '200':
+          description: Record found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+
+  /loans/{id}/return:
+    patch:
+      tags: [Loans]
+      summary: Return a book
+      parameters:
+        - $ref: '#/components/parameters/LoanId'
+      responses:
+        '200':
+          description: Book returned.
+
+components:
+  parameters:
+    BookId:
+      name: id
+      in: path
+      required: true
+      description: Book ID
+      schema:
+        type: string
+    StudentId:
+      name: id
+      in: path
+      required: true
+      description: Student ID
+      schema:
+        type: string
+    LoanId:
+      name: id
+      in: path
+      required: true
+      description: Loan ID
+      schema:
+        type: string
+    PageParam:
+      name: page
+      in: query
+      required: false
+      description: Page number
+      schema:
+        type: integer
+        default: 1
+    SizeParam:
+      name: size
+      in: query
+      required: false
+      description: Number of items per page
+      schema:
+        type: integer
+        default: 10
+
+  schemas:
+    Book:
+      type: object
+      required: [id, title, author, isbn, publisher, pageCount, stock]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        author:
+          type: string
+        isbn:
+          type: string
+          format: isbn-13
+        publisher:
+          type: string
+        pageCount:
+          type: integer
+        stock:
+          type: integer
+
+    Student:
+      type: object
+      required: [id, name, studentNumber, email, isActive]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        studentNumber:
+          type: string
+        email:
+          type: string
+          format: email
+        isActive:
+          type: boolean
+
+    Loan:
+      type: object
+      required: [id, studentId, bookId, loanDate, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+        bookId:
+          type: string
+        loanDate:
+          type: string
+          format: date
+        returnDate:
+          type: string
+          format: date
+          nullable: true
+        status:
+          type: string
+          enum: [ongoing, returned, late]
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Resource not found."
